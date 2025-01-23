@@ -16,10 +16,9 @@
     .edge { stroke: #ccc; stroke-width: 12px; cursor: pointer; }
     .blue { stroke: blue;}
     .red { stroke: red;}
-    .vertex { fill: #ccc;}
+    .vertex { fill: #999;}
     .hidden {display:none;}
-    #svg { border: 1px solid #ccc; }
-    #leveltext { border: 1px solid #ccc;
+    #leveltext {
       color: #ccc;
       text-align: center;
     }
@@ -163,7 +162,7 @@ const vertex = svg.selectAll(".vertex")
   .data(vertices)
   .enter().append("circle")
   .attr("class", "vertex")
-  .attr("r", 10)
+  .attr("r", 12)
   .attr("cx", d => x(d.x))
   .attr("cy", d => y(d.y));
 
