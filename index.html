@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ramsey Game</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { margin: 0; display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: black;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 3em;
+    }
+    .edge { stroke: #ccc; stroke-width: 8px; cursor: pointer; }
+    .blue { stroke: blue;}
+    .red { stroke: red;}
+    .vertex { fill: #ccc;}
+    .hidden {display:none;}
+    #svg { border: 1px solid #ccc; }
+    #leveltext { border: 1px solid #ccc;
+      color: #ccc;
+      text-align: center;
+    }
+    a {
+      background-color: #4CAF50; /* Green */
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<svg id="svg"></svg>
+<div id="leveltext"></div>
+
+<script>
+ // get level number from url
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+var level = NaN;
+if(urlParams.has('level'))
+{
+  level = parseInt(urlParams.get('level'));
+}
+
+
+
+// Configuration
+const width = Math.min(window.innerWidth, 800);
+const height = Math.min(window.innerHeight, 800);
+const size = Math.min(width, height);
+var x = d3.scaleLinear().domain([-1.1,1.1]).range([0, size]);
+var y = d3.scaleLinear().domain([-1.1,1.1]).range([size, 0]);
+
+
+const svg = d3.select("#svg");
+svg.attr("width", size).attr("height", size);
+const leveltext = d3.select("#leveltext");
+leveltext.style("width", size+"px").style("height", size+"px");
+
+
+var numVertices = 0;
+if(! isNaN(level)) {
+  numVertices = level+2;
+  svg.classed("hidden", false);
+  leveltext.classed("hidden", true);
+} else {
+  svg.classed("hidden", true);
+  leveltext.classed("hidden", false);
+  leveltext.html("<h1>Welcome to Ramsey game!</h1>\
+  Colour each edge red or blue and avoid monochromatic triangles!<br/>\
+  <a href='?level=1'>level 1</a>");
+}
+
+
+
+// Generate graph data
+const vertices = d3.range(numVertices)
+                   .map(i => (
+                                { id: i,
+                                  x: Math.sin(i*2*Math.PI/numVertices),
+                                  y: Math.cos(i*2*Math.PI/numVertices) }));
+
+const edgeByIndex = [];
+const edges = [];
+for(var i=0; i < numVertices-1; i++) {
+  for(var j=i+1; j<numVertices; j++ )
+  {
+    var newEdge = {
+      from: vertices[i],
+      to: vertices[j],
+      colour: 0
+    }
+    edges.push(newEdge);
+    edgeByIndex[i*numVertices+j] = newEdge;
+    edgeByIndex[j*numVertices+i] = newEdge;
+  }
+}
+
+// function to test if won
+function checkWin() {
+  for(var i=0; i < numVertices-1; i++) {
+    for(var j=i+1; j < numVertices; j++) {
+      var e0 = edgeByIndex[i*numVertices+j];
+      if(e0.colour == 0) {
+        return false;
+      }
+    }
+  }
+
+  for(var i=0; i < numVertices-2; i++) {
+    for(var j=i+1; j < numVertices-1; j++) {
+      var e0 = edgeByIndex[i*numVertices+j];
+      for(var k=j+1; k < numVertices; k++) {
+        var e1 = edgeByIndex[j*numVertices+k];
+        var e2 = edgeByIndex[k*numVertices+i];
+        if(e0.colour == e1.colour && e0.colour == e2.colour)
+        {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+// Add lines for edges
+const edge = svg.selectAll(".edge")
+  .data(edges)
+  .join("line")
+  .attr("class", "edge")
+  .attr("x1", d=>x(d.from.x))
+  .attr("x2", d=>x(d.to.x))
+  .attr("y1", d=>y(d.from.y))
+  .attr("y2", d=>y(d.to.y))
+  .classed("blue", d => d.colour == 1)
+  .classed("red", d => d.colour == 2)
+  .on("click", function(event,d) {
+    console.log(event);
+    d.colour = (d.colour + 1)%3;
+    d3.select(this)
+      .classed("blue", d => d.colour == 1)
+      .classed("red", d => d.colour == 2);
+    console.log(d.colour);
+    if(checkWin()) {
+      svg.classed("hidden", true);
+      leveltext.classed("hidden", false);
+      leveltext.html(`<h1>You won this level!</h1> <a href='?level=${level+1}'>level ${level+1}</a>`);
+    };
+  })
+  ;
+
+
+// Add circles for vertices
+const vertex = svg.selectAll(".vertex")
+  .data(vertices)
+  .enter().append("circle")
+  .attr("class", "vertex")
+  .attr("r", 10)
+  .attr("cx", d => x(d.x))
+  .attr("cy", d => y(d.y));
+
+</script>
+
+</body>
+</html>
