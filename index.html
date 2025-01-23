@@ -145,7 +145,7 @@ const edge = svg.selectAll(".edge")
   .classed("blue", d => d.colour == 1)
   .classed("red", d => d.colour == 2)
   .on("click", function(event,d) {
-    leveltext.classed("hidden", true);
+    leveltext.classed("hidden", false);
     leveltext.html("");
     console.log(event);
     d.colour = (d.colour + 1)%3;
