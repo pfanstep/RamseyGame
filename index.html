@@ -6,7 +6,8 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { margin: 0; display: flex;
+    body { margin: 0; 
+      display: flex;
       flex-direction: column;
       align-items: center;
       background-color: black;
@@ -21,26 +22,64 @@
     .red { stroke: red;}
     .vertex { fill: #999;}
     .hidden {display:none;}
+
+    .nav {
+      list-style-type: none;
+      text-align: center; 
+      text-decoration: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav li {
+      background-color: #4CAF50;
+      display: inline-block;
+      font-size: 20px;
+      margin: 0;
+      padding: 10px 10px;  
+    }
+
+    a {
+      text-decoration: none;
+      color: white;
+    }
+    
     #leveltext {
       color: #ccc;
       text-align: center;
     }
-    a {
-      background-color: #4CAF50; /* Green */
-      border: none;
-      color: white;
+
+    #start{
       padding: 15px 32px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
+      font-size: 30px;
     }
+
+    #copyright{
+      color: #ccc;
+      font-size: 15px;
+      position: fixed;
+      bottom: 10px;
+      right: 10px;      
+    }
+    
   </style>
 </head>
 <body>
 
-<div id="leveltext"></div>
-<svg id="svg"></svg>
 
+<svg id="graph"></svg>
+<ul id="buttons" class="nav">
+  <li id="prev"></li>
+  <li id="reset"></li>
+  <li id="next"></li> 
+</ul>  
+  
+<div id="leveltext"></div>  
+<ul id="startButton" class="nav">
+  <li id="start"><a href='?level=1'>Start Game</a></li>
+</ul>  
+<div id="copyright">Copyright: S.Pfannerer-Mittas, T.Lesgourgues</div>
+  
 <script>
  // get level number from url
 const queryString = window.location.search;
@@ -51,35 +90,61 @@ if(urlParams.has('level'))
   level = parseInt(urlParams.get('level'));
 }
 
-
-
 // Configuration
-const width = Math.min(window.innerWidth, 800);
-const height = Math.min(window.innerHeight, 800);
+const width = Math.min(window.innerWidth, 600); //800
+const height = Math.min(window.innerHeight, 600); //800
 const size = Math.min(width, height);
 var x = d3.scaleLinear().domain([-1.1,1.1]).range([0, size]);
 var y = d3.scaleLinear().domain([-1.1,1.1]).range([size, 0]);
 
-
-const svg = d3.select("#svg");
-svg.attr("width", size).attr("height", size);
+const graph = d3.select("#graph");
+graph.attr("width", size).attr("height", size);
 const leveltext = d3.select("#leveltext");
 leveltext.style("width", size+"px");
+const buttons = d3.select("#buttons");
+const startButton = d3.select("#startButton");
+
+const prevText = "Previous Level";
+const nextText = "Next Level";
+const resetText = "Reset";
+
+const prevButton = d3.select("#prev");
+const resetButton = d3.select("#reset");
+const nextButton = d3.select("#next");
+  
 
 
 var numVertices = 0;
-if(! isNaN(level)) {
-  numVertices = level+2;
-  svg.classed("hidden", false);
-  leveltext.classed("hidden", true);
-} else {
-  svg.classed("hidden", true);
-  leveltext.classed("hidden", false);
+//Intro Page
+if(isNaN(level)) 
+{  
+  graph.classed("hidden", true);
+  buttons.classed("hidden", true);
+  
+  //leveltext.classed("hidden", false);
   leveltext.html("<h1>Welcome to Ramsey game!</h1>\
-  Colour each edge red or blue and avoid monochromatic triangles!<br/>\
-  <a href='?level=1'>Start level 1</a>");
-}
+  Colour each edge red or blue and avoid monochromatic triangles!<br/>");
+  
+} else { /*other levels*/
+  numVertices = level+2;
 
+  leveltext.classed("hidden", true);
+  //leveltext.html("<h3>Level "+level+"</h3>");
+  
+  graph.classed("hidden", false);
+  startButton.classed("hidden", true);
+
+  resetButton.html(`<a href='?level=${level}'>`+resetText+`</a>`);
+  nextButton.html(`<a href='?level=${level+1}'>`+nextText+`</a>`);
+  
+  
+  if(level==1){
+    //buttons.style("margin", "-150px");
+    prevButton.html(`<a href='?'>`+prevText+`</a>`);
+  } else {
+    prevButton.html(`<a href='?level=${level-1}'>`+prevText+`</a>`);
+  }
+} 
 
 
 // Generate graph data
@@ -134,7 +199,7 @@ function checkWin() {
 }
 
 // Add lines for edges
-const edge = svg.selectAll(".edge")
+const edge = graph.selectAll(".edge")
   .data(edges)
   .join("line")
   .attr("class", "edge")
@@ -147,22 +212,20 @@ const edge = svg.selectAll(".edge")
   .on("click", function(event,d) {
     leveltext.classed("hidden", false);
     leveltext.html("");
-    console.log(event);
     d.colour = (d.colour + 1)%3;
     d3.select(this)
       .classed("blue", d => d.colour == 1)
       .classed("red", d => d.colour == 2);
-    console.log(d.colour);
     if(checkWin()) {
       leveltext.classed("hidden", false);
-      leveltext.html(`<h1>You won this level!</h1> <a href='?level=${level+1}'>Start level ${level+1}</a>`);
+      leveltext.html(`<h1>You won this level!</h1>`);
     };
   })
   ;
 
 
 // Add circles for vertices
-const vertex = svg.selectAll(".vertex")
+const vertex = graph.selectAll(".vertex")
   .data(vertices)
   .enter().append("circle")
   .attr("class", "vertex")
