@@ -91,7 +91,7 @@
 <ul id="startButton" class="nav">
   <li id="start"><a href='?level=1'>Start Game</a></li>
 </ul>  
-<div id="copyright">Copyright: S.Pfannerer-Mittas, T.Lesgourgues</div>
+<div id="copyright"></div>
   
 <script>
  // get level number from url
@@ -116,6 +116,9 @@ const leveltext = d3.select("#leveltext");
 leveltext.style("width", size+"px");
 const buttons = d3.select("#buttons");
 const startButton = d3.select("#startButton");
+
+const copyright = d3.select("#copyright");
+const copyrightText = "Copyright: S.Pfannerer-Mittas, T.Lesgourgues";
   
 const prevText = "Previous Level";
 const resetText = "Reset";
@@ -156,7 +159,8 @@ if(isNaN(level))
   startButton.classed("hidden", true);
 
   resetButton.html(`<a href='?level=${level}'>`+resetText+`</a>`);
-  // nextButton.html(`<a href='?level=${level+1}'>`+nextText+`</a>`);
+  copyright.html(`<a href='?level=${level+1}'>`+copyrightText+`</a>`);
+  // d3.select("copyright").style("cursor", "none"); I wanted to hide the cursor, not working
   nextButton.html(doneText);
   
   
@@ -196,18 +200,11 @@ for(var i=0; i < numVertices-1; i++) {
 
 // function to test if won
 function checkWin() { //return boolean,color,e0,e1,e2
-  for(var i=0; i < numVertices-1; i++) {
-    for(var j=i+1; j < numVertices; j++) {
-      var e0 = edgeByIndex[i*numVertices+j];
-      if(e0.colour == 0) {
-        return [false,0,i,j,0]; 
-      }
-    }
-  }
-
+  // i want to check the colors first, for some exercises
   for(var i=0; i < numVertices-2; i++) {
     for(var j=i+1; j < numVertices-1; j++) {
       var e0 = edgeByIndex[i*numVertices+j];
+      if(e0.colour ==0){continue}
       for(var k=j+1; k < numVertices; k++) {
         var e1 = edgeByIndex[j*numVertices+k];
         var e2 = edgeByIndex[k*numVertices+i];
@@ -218,7 +215,15 @@ function checkWin() { //return boolean,color,e0,e1,e2
       }
     }
   }
-
+  
+  for(var i=0; i < numVertices-1; i++) {
+    for(var j=i+1; j < numVertices; j++) {
+      var e0 = edgeByIndex[i*numVertices+j];
+      if(e0.colour == 0) {
+        return [false,0,i,j,0]; 
+      }
+    }
+  }
   return [true,0,0,0,0];
 }
 
