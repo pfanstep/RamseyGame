@@ -20,7 +20,8 @@
           -webkit-tap-highlight-color: rgba(0,0,0,0);}
     .blue { stroke: blue;}
     .red { stroke: red;}
-    .green { stroke: green;} 
+    .green { stroke: green;}
+    .black { stroke: black;}
     .vertex { fill: #999;}
     .hidden {display:none;}
     .highlightred{filter: drop-shadow(0 0 10px rgb(255, 0, 0));}
@@ -159,7 +160,8 @@ if(isNaN(level))
   startButton.classed("hidden", true);
 
   resetButton.html(`<a href='?level=${level}'>`+resetText+`</a>`);
-  copyright.html(`<a href='?level=${level+1}'>`+copyrightText+`</a>`);
+  copyright.html(`<a href='?level=${level+1}'>`+copyrightText+`</a>`);// this is if we want to ``cheat'' by advancing one level
+  
   // d3.select("copyright").style("cursor", "none"); I wanted to hide the cursor, not working
   nextButton.html(doneText);
   
@@ -267,9 +269,14 @@ const vertex = graph.selectAll(".vertex")
   .data(vertices)
   .enter().append("circle")
   .attr("class", "vertex")
+  .attr("id",d=>d.id)
   .attr("r", 12)
   .attr("cx", d => x(d.x))
-  .attr("cy", d => y(d.y));
+  .attr("cy", d => y(d.y))
+  /*.on("click", function(event,d) { //HERE if we want to use the game to prove the case k=6 is impossible
+    if(level==4){proof()}
+  })*/
+  ;
 
 //(I'm done/next level) button code
 const c = nextButton.on("click", () => {
@@ -292,11 +299,11 @@ const c = nextButton.on("click", () => {
         id2 = [check[2],check[4]];
         id3 = [check[3],check[4]];
 
-        //ed's have been decalred globally
+        //ed's have been declared globally
         ed1 = document.getElementById(id1);
         ed2 = document.getElementById(id2);
         ed3 = document.getElementById(id3);
-        //applying red highliight to blue, and vice-versa
+        //applying red highlight to blue, and vice-versa
         if(check[1]==1){txthigh = "highlightred"}else{txthigh = "highlightblue"}
         d3.select(ed1).classed(txthigh,true);
         d3.select(ed2).classed(txthigh,true);
@@ -304,6 +311,21 @@ const c = nextButton.on("click", () => {
       }
     };
 });
+  
+var bool_hide;
+function proof(){ //used to prove the K6 case, hiding useless edges
+
+  bool_hide = d3.select(document.getElementById([0,1])).classed('hidden');
+  d3.select(document.getElementById([0,1])).classed('hidden',!bool_hide);
+  d3.select(document.getElementById([0,2])).classed('hidden',!bool_hide);
+  d3.select(document.getElementById([0,3])).classed('hidden',!bool_hide);
+  d3.select(document.getElementById([0,4])).classed('hidden',!bool_hide);
+  d3.select(document.getElementById([0,5])).classed('hidden',!bool_hide);
+  d3.select(document.getElementById([1,4])).classed('hidden',!bool_hide);
+  d3.select(document.getElementById([2,4])).classed('hidden',!bool_hide);
+  d3.select(document.getElementById([3,4])).classed('hidden',!bool_hide);
+  d3.select(document.getElementById([4,5])).classed('hidden',!bool_hide);
+}
 
 </script>
 
